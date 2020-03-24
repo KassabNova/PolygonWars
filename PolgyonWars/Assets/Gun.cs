@@ -10,10 +10,15 @@ public class Gun : MonoBehaviour
     public float range = 100f;
     public Camera fpsCam;
     private Animator gunSlider;
+    private Animation gunShoot;
+    private AudioSource gunSound;
+    private AudioSource gunShell;
     private void Start()
     {
         fpsCam = GameObject.Find("FirstPersonCharacter").GetComponent<Camera>();
         gunSlider = GameObject.Find("SM_Wep_PistolSwat_01").GetComponent<Animator>();
+        gunShoot = GameObject.Find("SM_Wep_PistolSwat_01").GetComponent<Animation>();
+        gunSound = GameObject.Find("SM_Wep_PistolSwat_01").GetComponent<AudioSource>();
     }
     void LateUpdate()
     {
@@ -29,19 +34,14 @@ public class Gun : MonoBehaviour
 
         if (Input.GetButtonDown("Fire1"))
         {
+            if (gunSlider.GetCurrentAnimatorStateInfo(0).IsName("IdlePistol"))
+            {
+                gunSlider.SetTrigger("Shoot");
+                gunSound.PlayOneShot(gunSound.clip);
+                Shoot();
+            }
 
-            gunSlider.SetBool("isShooting", true);
 
-            Debug.Log(gunSlider.GetBool("isShooting"));
-
-            Shoot();
-
-            while (gunSlider.GetCurrentAnimatorStateInfo(0).IsName("Pistol") &&
-                    gunSlider.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
-                WaitShoot();
-            gunSlider.SetBool("isShooting", false);
-
-            Debug.Log(gunSlider.GetBool("isShooting"));
         }
     }
 
