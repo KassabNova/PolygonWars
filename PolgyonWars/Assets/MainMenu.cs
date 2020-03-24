@@ -8,7 +8,8 @@ public class MainMenu : MonoBehaviour
 
     public void PlayPolygonWars()
     {
-        //SceneManager.LoadScene(1);
+        LoadSceneParameters sceneParameters = new LoadSceneParameters();
+        SceneManager.LoadScene("WaitingLobby",sceneParameters);
     }
 
     public void ExitGame()
