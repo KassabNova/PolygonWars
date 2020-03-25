@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerMechanics : MonoBehaviour
 {
+	//Enseñando a usar git
     public float health = 100f;
     public int kills = 0;
     public int deaths = 0;
@@ -36,7 +37,7 @@ public class PlayerMechanics : MonoBehaviour
             killsText.text = $"Kills:{kills}";
         }
     }
-
+	
     public void TakeDamage(float amount)
     {
         health -= amount;
