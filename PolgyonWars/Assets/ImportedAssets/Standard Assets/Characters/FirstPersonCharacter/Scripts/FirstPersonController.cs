@@ -3,12 +3,12 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
 using Random = UnityEngine.Random;
-
+using Mirror;
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     [RequireComponent(typeof (CharacterController))]
     [RequireComponent(typeof (AudioSource))]
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : NetworkBehaviour
     {
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
@@ -57,10 +57,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			m_MouseLook.Init(transform , m_Camera.transform);
         }
 
+        public override void OnStartLocalPlayer()
+        {
+            base.OnStartLocalPlayer();
 
+            Camera.main.orthographic = false;
+            Camera.main.transform.SetParent(transform);
+            Camera.main.transform.localPosition = new Vector3(0f, 0.8f, -8f);
+            Camera.main.transform.localEulerAngles = new Vector3(10f, 0f, 0f);
+        }
+        void OnDisable()
+        {
+            if (isLocalPlayer)
+            {
+                Camera.main.orthographic = true;
+                Camera.main.transform.SetParent(null);
+                Camera.main.transform.localPosition = new Vector3(5.45f, 29.86f, 10.51f);
+                Camera.main.transform.localEulerAngles = new Vector3(90f, 90f, 0f);
+            }
+        }
         // Update is called once per frame
         private void Update()
         {
+            if (!isLocalPlayer || m_CharacterController == null)
+                return;
+
             RotateView();
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
@@ -94,6 +115,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
+            if (!isLocalPlayer || m_CharacterController == null)
+                return;
+
             float speed;
             GetInput(out speed);
             // always move along the camera forward as it is the direction that it being aimed at
