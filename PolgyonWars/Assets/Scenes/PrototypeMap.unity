@@ -22828,7 +22828,7 @@ GameObject:
   - component: {fileID: 662452156}
   m_Layer: 0
   m_Name: Spawn (3)
-  m_TagString: Untagged
+  m_TagString: Respawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28998,7 +28998,7 @@ GameObject:
   - component: {fileID: 874103879}
   m_Layer: 0
   m_Name: Spawn (2)
-  m_TagString: Untagged
+  m_TagString: Respawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35939,7 +35939,7 @@ GameObject:
   - component: {fileID: 1101093273}
   m_Layer: 0
   m_Name: Spawn (1)
-  m_TagString: Untagged
+  m_TagString: Respawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35952,7 +35952,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101093271}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 44, y: -1.5, z: 28.5}
+  m_LocalPosition: {x: 20.14, y: -1.5, z: 28.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 917431139}
@@ -40326,7 +40326,7 @@ GameObject:
   - component: {fileID: 1239628218}
   m_Layer: 0
   m_Name: Spawn
-  m_TagString: Untagged
+  m_TagString: Respawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -62927,7 +62927,7 @@ MonoBehaviour:
   networkAddress: localhost
   maxConnections: 4
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 8826501113915999913, guid: 74d562d9b0d7ec144b255ba4152ee1c2,
+  playerPrefab: {fileID: 5241188714087987051, guid: 52139804eb7b78f44b7f9e457042e223,
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0

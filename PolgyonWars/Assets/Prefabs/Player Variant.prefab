@@ -5256,7 +5256,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  health: 100
+  health: 1000
   kills: 0
   deaths: 0
   death: 0
@@ -5264,11 +5264,11 @@ MonoBehaviour:
   hudText: []
   ammoText: {fileID: 0}
   killsText: {fileID: 0}
-  playerGun: {fileID: 0}
   damage: 50
   range: 100
   fpsCam: {fileID: 0}
   multipleShots: 0
+  player: {fileID: 0}
 --- !u!114 &7532072886306086637
 MonoBehaviour:
   m_ObjectHideFlags: 0
