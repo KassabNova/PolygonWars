@@ -24,7 +24,7 @@ public class PlayerMechanics : NetworkBehaviour
     public TMP_Text ammoText;
     public TMP_Text killsText;
     public TMP_Text healthText;
-    public int damage = 50;
+    public int damage = 25;
     public float range = 100f;
     public Camera fpsCam;
     public bool multipleShots = false;
@@ -109,7 +109,7 @@ public class PlayerMechanics : NetworkBehaviour
         if (isServer)
         {
             health -= amount;
-            if (health < 0)
+            if (health <= 0)
             {
                 Die();
             }
@@ -128,6 +128,18 @@ public class PlayerMechanics : NetworkBehaviour
 
         TakeDamage(value);
     }
+
+    [Command]
+    void CmdDealDamage(int value, string playerName)
+    {
+
+        Debug.LogError($"Player {this.name}, wants to hit {playerName}");
+
+        PlayerMechanics player = GameObject.Find(playerName).GetComponent<PlayerMechanics>();
+        Debug.LogError(player);
+        player.TakeDamage(value);
+    }
+
     [ClientRpc]
     void RpcTakeDamage(int value)
     {
@@ -196,9 +208,10 @@ public class PlayerMechanics : NetworkBehaviour
             ShootableNPC npc = hit.transform.GetComponent<ShootableNPC>();
             if (player != null)
             {
-                Debug.LogError($"Auth del jugador local " + this.hasAuthority.ToString());
-                Debug.LogError($"Auth del jugador golpeado " + player.hasAuthority.ToString());
-                player.TakeDamage(damage);
+                Debug.LogError($"Auth del jugador {this.name} local " + this.hasAuthority.ToString());
+                Debug.LogError($"Auth del jugador {player.name} golpeado " + player.hasAuthority.ToString());
+                CmdDealDamage(damage, player.name);
+                //player.TakeDamage(damage);
                 if (player.death)
                 {
                     player.kills += 1;
