@@ -34,12 +34,13 @@ public class PlayerMechanics : NetworkBehaviour
     private AudioSource gunSound;
     private AudioSource gunShell;
     public PlayerMechanics player;
+    public ParticleSystem dieFx;
     public int ammo { get; set; }
     // Start is called before the first frame update
     void Start()
     {
         hudText = GetComponentsInChildren<TMP_Text>();
-        if(hudText.Length > 0)
+        if (hudText.Length > 0)
         {
             killsText = hudText[0];
             ammoText = hudText[1];
@@ -47,6 +48,7 @@ public class PlayerMechanics : NetworkBehaviour
 
         }
 
+        dieFx = GetComponentInChildren<ParticleSystem>();
         fpsCam = GetComponentInChildren<Camera>();
         animators = GetComponentsInChildren<Animator>();
         foreach (Animator animator in animators)
@@ -84,7 +86,6 @@ public class PlayerMechanics : NetworkBehaviour
                 gunSlider.SetTrigger("Shoot");
                 gunSound.PlayOneShot(gunSound.clip);
                 Shoot();
-                ammo -= 1;
             }
         }
         if (Input.GetKeyDown(KeyCode.R))
@@ -99,7 +100,7 @@ public class PlayerMechanics : NetworkBehaviour
 
     private void Respawn()
     {
-        
+
     }
 
     public void TakeDamage(int amount)
@@ -108,14 +109,14 @@ public class PlayerMechanics : NetworkBehaviour
         if (isServer)
         {
             health -= amount;
-            if(health < 0)
+            if (health < 0)
             {
                 Die();
             }
         }
         else
         {
-            Debug.LogError($"{this.name} entering CMD with {this.health} hp");
+            Debug.LogError($"Auth del {this.name}  golpeado with {this.health} hp :" + this.hasAuthority.ToString());
             CmdTakeDamage(amount);
         }
 
@@ -140,11 +141,14 @@ public class PlayerMechanics : NetworkBehaviour
 
         this.health = newValue;
     }
-    
+
     [Command]
-    void CmdChangeName(string newName)
+    void CmdChangeName()
     {
-        ChangeName("oldName",newName);
+        string newName;
+        newName = this.netId.ToString();
+        name = newName;
+        gameObject.name = newName;
     }
     void ChangeName(string oldName, string newName)
     {
@@ -155,42 +159,47 @@ public class PlayerMechanics : NetworkBehaviour
         }
         else
         {
-            CmdChangeName(newName);
+            CmdChangeName();
         }
     }
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
-        System.Random rand = new System.Random();
-        //char asdf = rand.Next(4).ToString();
-        gameObject.name = $"Player{rand.Next(4)} ";
-        ChangeName("oldName",gameObject.name);
+        CmdChangeName();
     }
     public void Die()
     {
         Debug.LogError($"Player {this.name} has {deaths} deaths");
 
+        dieFx.Play();
         //death = true;
         health = 100;
         deaths++;
 
     }
 
-
+    [Command]
+    void CmdShoot()
+    {
+        Debug.LogError($"{this.name} is shooting on server");
+        player.TakeDamage(damage);
+    }
     void Shoot()
     {
+
+        ammo--;
         RaycastHit hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
         {
             Debug.Log(hit.transform.name);
-            PlayerMechanics enemy = hit.transform.GetComponent<PlayerMechanics>();
+            PlayerMechanics player = hit.transform.GetComponent<PlayerMechanics>();
             ShootableNPC npc = hit.transform.GetComponent<ShootableNPC>();
-            if (enemy != null)
+            if (player != null)
             {
-                Debug.LogError($"Player health changed on raycast hit Enemy:[ name: {enemy.name}, health: {enemy.health}] This:[name: {this.name}, health: {this.health}]");
-
-                enemy.TakeDamage(damage);
-                if (enemy.death)
+                Debug.LogError($"Auth del jugador local " + this.hasAuthority.ToString());
+                Debug.LogError($"Auth del jugador golpeado " + player.hasAuthority.ToString());
+                player.TakeDamage(damage);
+                if (player.death)
                 {
                     player.kills += 1;
                     Debug.Log("The player killed another player!");
@@ -206,6 +215,5 @@ public class PlayerMechanics : NetworkBehaviour
                 }
             }
         }
-
     }
 }
