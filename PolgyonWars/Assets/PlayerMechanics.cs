@@ -7,33 +7,27 @@ using UnityEngine;
 
 public class PlayerMechanics : NetworkBehaviour
 {
-
-
-    //Enseñando a usar git
-    [SyncVar(hook = "ChangeQWER")]
+    [SyncVar(hook = "ChangeHealth")]
     public int health = 100;
 
     [SyncVar(hook = "ChangeName")]
-    public string name = "ASDF";
+    public string name = "initialName";
 
     public int kills = 0;
     public int deaths = 0;
     public bool death = false;
-    public Canvas[] playerHUD;
     public TMP_Text[] hudText;
     public TMP_Text ammoText;
     public TMP_Text killsText;
     public TMP_Text healthText;
     public int damage = 25;
-    public float range = 100f;
+    public float range = 40f;
     public Camera fpsCam;
     public bool multipleShots = false;
     private Animator[] animators;
     private Animator gunSlider;
     private AudioSource[] sources;
     private AudioSource gunSound;
-    private AudioSource gunShell;
-    public PlayerMechanics player;
     public ParticleSystem dieFx;
     public int ammo { get; set; }
     // Start is called before the first frame update
@@ -47,7 +41,6 @@ public class PlayerMechanics : NetworkBehaviour
             healthText = hudText[2];
 
         }
-
         dieFx = GetComponentInChildren<ParticleSystem>();
         fpsCam = GetComponentInChildren<Camera>();
         animators = GetComponentsInChildren<Animator>();
@@ -62,8 +55,6 @@ public class PlayerMechanics : NetworkBehaviour
             if (source.clip.name == "pistolGunshot")
                 gunSound = source;
         }
-        playerHUD = GetComponentsInChildren<Canvas>();
-        player = GetComponent<PlayerMechanics>();
         ammo = 8;
     }
 
@@ -72,6 +63,7 @@ public class PlayerMechanics : NetworkBehaviour
     {
         if (!isLocalPlayer)
             return;
+
         if (hudText.Length > 0)
         {
             ammoText.text = $"Ammo:{ammo}";
@@ -97,7 +89,6 @@ public class PlayerMechanics : NetworkBehaviour
             Respawn();
         }
     }
-
     private void Respawn()
     {
 
@@ -105,21 +96,14 @@ public class PlayerMechanics : NetworkBehaviour
 
     public void TakeDamage(int amount)
     {
-
         if (isServer)
         {
             health -= amount;
             if (health <= 0)
-            {
                 Die();
-            }
         }
         else
-        {
-            Debug.LogError($"Auth del {this.name}  golpeado with {this.health} hp :" + this.hasAuthority.ToString());
             CmdTakeDamage(amount);
-        }
-
     }
     [Command]
     void CmdTakeDamage(int value)
@@ -128,7 +112,6 @@ public class PlayerMechanics : NetworkBehaviour
 
         TakeDamage(value);
     }
-
     [Command]
     void CmdDealDamage(int value, string playerName)
     {
@@ -139,18 +122,9 @@ public class PlayerMechanics : NetworkBehaviour
         Debug.LogError(player);
         player.TakeDamage(value);
     }
-
-    [ClientRpc]
-    void RpcTakeDamage(int value)
+    void ChangeHealth(int oldValue, int newValue)
     {
-        Debug.LogError($"Player health changed on RPC  Name: {this.name}, Health: {this.health}");
-
-        this.health = value;
-    }
-    void ChangeQWER(int oldValue, int newValue)
-    {
-        Debug.LogError($"Player health changed on Hook OldVal: {oldValue}, New: {newValue}, Name: {this.name}, Health: {this.health}");
-
+        Debug.LogError($"Player {this.name} health changed on Hook  [Previous HP: {this.health}  New HP: {newValue}]");
         this.health = newValue;
     }
 
@@ -198,7 +172,6 @@ public class PlayerMechanics : NetworkBehaviour
     }
     void Shoot()
     {
-
         ammo--;
         RaycastHit hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
@@ -208,10 +181,7 @@ public class PlayerMechanics : NetworkBehaviour
             ShootableNPC npc = hit.transform.GetComponent<ShootableNPC>();
             if (player != null)
             {
-                Debug.LogError($"Auth del jugador {this.name} local " + this.hasAuthority.ToString());
-                Debug.LogError($"Auth del jugador {player.name} golpeado " + player.hasAuthority.ToString());
                 CmdDealDamage(damage, player.name);
-                //player.TakeDamage(damage);
                 if (player.death)
                 {
                     player.kills += 1;
