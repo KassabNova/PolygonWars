@@ -1372,16 +1372,14 @@ MonoBehaviour:
   kills: 0
   deaths: 0
   death: 0
-  playerHUD: []
   hudText: []
   ammoText: {fileID: 0}
   killsText: {fileID: 0}
   healthText: {fileID: 0}
-  damage: 50
+  damage: 25
   range: 100
   fpsCam: {fileID: 0}
   multipleShots: 0
-  player: {fileID: 0}
   dieFx: {fileID: 0}
 --- !u!114 &6694888413928969300
 MonoBehaviour:

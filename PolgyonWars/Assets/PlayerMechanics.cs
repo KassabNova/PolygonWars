@@ -13,9 +13,11 @@ public class PlayerMechanics : NetworkBehaviour
     [SyncVar(hook = "ChangeName")]
     public string name = "initialName";
 
+    [SyncVar(hook = "ChangeSpawn")]
+    public bool death = false;
+
     public int kills = 0;
     public int deaths = 0;
-    public bool death = false;
     public TMP_Text[] hudText;
     public TMP_Text ammoText;
     public TMP_Text killsText;
@@ -29,6 +31,16 @@ public class PlayerMechanics : NetworkBehaviour
     private AudioSource[] sources;
     private AudioSource gunSound;
     public ParticleSystem dieFx;
+
+    /*
+     on death you're probably already sending a TargetRpc to the client of the deceased...
+     include a line in there that sets client authority off for the NetTransform. 
+     Then a few seconds later when you decide to respawn on the server, 
+     you can just move it on the server and it should teleport correctly. 
+     Then re-enable client auth on the resurrected client
+
+        Alternative: actually re-instantiate the player object, call NetworkServer.ReplacePlayerForConnection, then destroy the corpse.
+         */
     public int ammo { get; set; }
     // Start is called before the first frame update
     void Start()
@@ -80,54 +92,124 @@ public class PlayerMechanics : NetworkBehaviour
                 Shoot();
             }
         }
+        if (Input.GetButtonDown("Fire2"))
+        {
+            Respawn();
+        }
         if (Input.GetKeyDown(KeyCode.R))
         {
             ammo = 8;
         }
         if (death)
         {
+            death = false;
+            CmdRespawn();
             Respawn();
         }
     }
-    private void Respawn()
+
+    [Command]
+    private void CmdRespawn()
     {
+        this.death = false;
+    }
+
+    [ClientRpc]
+    private void RpcRespawn()
+    {
+
+        //Respawn();
+        Debug.LogError($"Target Respawn {this.hasAuthority}");
+        NetworkTransform networkTransform = GetComponent<NetworkTransform>();
+        networkTransform.clientAuthority = false;
+        Debug.LogError($"Target Respawn {this.hasAuthority}");
+
+        //GameObject SpawnsHolder = GameObject.Find("Spawns");
+        //NetworkStartPosition[] Spawns = SpawnsHolder.GetComponentsInChildren<NetworkStartPosition>();
+        //System.Random rand = new System.Random();
+        ////this.transform = Spawns[rand.Next(0, 3)].gameObject.transform;
+        //NetworkTransform networkTransform = GetComponent<NetworkTransform>();
+        //networkTransform.transform.position = Spawns[rand.Next(0, 3)].gameObject.transform.position;
+    }
+    [TargetRpc]
+    private void TargetRespawn(NetworkConnection conn)
+    {
+
+        //Respawn();
+
+        Debug.LogError($"Target Respawn {this.hasAuthority}");
+        NetworkTransform networkTransform = GetComponent<NetworkTransform>();
+        NetworkIdentity identity = GetComponent<NetworkIdentity>();
+        networkTransform.clientAuthority = false;
+        
+        Debug.LogError($"Target Respawn this: {this.hasAuthority}, trans {networkTransform.hasAuthority} , ident {identity.hasAuthority}");
+
+
 
     }
 
-    public void TakeDamage(int amount)
+    private void Respawn()
+    {
+        Debug.LogError(hasAuthority);
+        GameObject SpawnsHolder = GameObject.Find("Spawns");
+        NetworkStartPosition[] Spawns = SpawnsHolder.GetComponentsInChildren<NetworkStartPosition>();
+        System.Random rand = new System.Random();
+        //this.transform = Spawns[rand.Next(0, 3)].gameObject.transform;
+        NetworkTransform networkTransform = GetComponent<NetworkTransform>();
+        Debug.LogError($"Client Respawn {this.hasAuthority}");
+        Vector3 spawn = Spawns[rand.Next(0, 3)].gameObject.transform.position;
+        networkTransform.transform.position = spawn;
+        //this.transform.position = spawn;
+    }
+
+    public void TakeDamage(PlayerMechanics whoShooted,int amount)
     {
         if (isServer)
         {
             health -= amount;
             if (health <= 0)
-                Die();
-        }
-        else
-            CmdTakeDamage(amount);
-    }
-    [Command]
-    void CmdTakeDamage(int value)
-    {
-        Debug.LogError($"Player health changed on server {this.name}, {this.health}");
+            {
+                health = 100;
+                Debug.LogError($"Server before die {this.hasAuthority}");
+                RpcDie();
+                death = true;
+                NetworkIdentity identity = GetComponent<NetworkIdentity>();
+                //TargetRespawn(identity.connectionToClient);
+                Debug.LogError($"Server after die {this.hasAuthority}");
 
-        TakeDamage(value);
+            }
+        }
     }
+
     [Command]
-    void CmdDealDamage(int value, string playerName)
+    void CmdDealDamage(int damage, string playerName)
     {
         Debug.LogError($"Player {this.name}, wants to hit {playerName}");
         PlayerMechanics player = GameObject.Find(playerName).GetComponent<PlayerMechanics>();
         Debug.LogError(player);
-        player.TakeDamage(value);
+        player.TakeDamage(this,damage);
     }
     void ChangeHealth(int oldValue, int newValue)
     {
         Debug.LogError($"Player {this.name} health changed on Hook  [Previous HP: {this.health}  New HP: {newValue}]");
         this.health = newValue;
     }
+    void ChangeSpawn(bool oldValue, bool newValue)
+    {
+        Debug.LogError($"Player {this.name} life changed on Hook  [Previous status: {this.death}  New status: {newValue}]");
+        this.death = newValue;
+    }
 
     [Command]
     void CmdChangeName()
+    {
+        string newName;
+        newName = this.netId.ToString();
+        name = newName;
+        gameObject.name = newName;
+    }
+    [Command]
+    void CmdShoot()
     {
         string newName;
         newName = this.netId.ToString();
@@ -151,13 +233,19 @@ public class PlayerMechanics : NetworkBehaviour
         base.OnStartLocalPlayer();
         CmdChangeName();
     }
+
+
     public void Die()
     {
-        Debug.Log($"Player {this.name} has {deaths} deaths");
+        Debug.LogError($"Player {this.name} has {deaths} deaths");
         dieFx.Play();
-        death = true;
         health = 100;
         deaths++;
+    }
+    [ClientRpc]
+    public void RpcDie()
+    {
+        Die();
     }
     void Shoot()
     {
