@@ -115,9 +115,7 @@ public class PlayerMechanics : NetworkBehaviour
     [Command]
     void CmdDealDamage(int value, string playerName)
     {
-
         Debug.LogError($"Player {this.name}, wants to hit {playerName}");
-
         PlayerMechanics player = GameObject.Find(playerName).GetComponent<PlayerMechanics>();
         Debug.LogError(player);
         player.TakeDamage(value);
@@ -155,20 +153,11 @@ public class PlayerMechanics : NetworkBehaviour
     }
     public void Die()
     {
-        Debug.LogError($"Player {this.name} has {deaths} deaths");
-
+        Debug.Log($"Player {this.name} has {deaths} deaths");
         dieFx.Play();
-        //death = true;
+        death = true;
         health = 100;
         deaths++;
-
-    }
-
-    [Command]
-    void CmdShoot()
-    {
-        Debug.LogError($"{this.name} is shooting on server");
-        player.TakeDamage(damage);
     }
     void Shoot()
     {
