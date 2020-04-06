@@ -69,3 +69,7 @@ PolgyonWars/Temp/
 PolgyonWars/obj/
 
 Win86Build/
+
+BuildRoom/
+
+*.zip

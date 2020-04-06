@@ -85,6 +85,10 @@ public class PlayerMechanics : NetworkBehaviour
         }
         if (Input.GetButtonDown("Fire1"))
         {
+            if (Cursor.lockState != CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
             if (ammo > 0)
             {
                 gunSlider.SetTrigger("Shoot");
@@ -100,11 +104,9 @@ public class PlayerMechanics : NetworkBehaviour
         {
             ammo = 8;
         }
-        if (death)
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            death = false;
-            CmdRespawn();
-            Respawn();
+            Cursor.lockState = CursorLockMode.None;
         }
     }
 
@@ -157,11 +159,35 @@ public class PlayerMechanics : NetworkBehaviour
         //this.transform = Spawns[rand.Next(0, 3)].gameObject.transform;
         NetworkTransform networkTransform = GetComponent<NetworkTransform>();
         Debug.LogError($"Client Respawn {this.hasAuthority}");
-        Vector3 spawn = Spawns[rand.Next(0, 3)].gameObject.transform.position;
-        networkTransform.transform.position = spawn;
+        Transform spawn = Spawns[rand.Next(0, 3)].gameObject.transform;
+        while(networkTransform.transform.position == spawn.position)
+        {
+            spawn = Spawns[rand.Next(0, 3)].gameObject.transform;
+        }
+        networkTransform.transform.position = spawn.position;
+        networkTransform.transform.rotation = spawn.rotation;
+        this.transform.position = spawn.position;
+        this.transform.rotation = spawn.rotation;
         //this.transform.position = spawn;
     }
+    private IEnumerator RespawnTwo()
+    {
+        yield return new WaitForSeconds(3f);
 
+        GameObject SpawnsHolder = GameObject.Find("Spawns");
+        NetworkStartPosition[] Spawns = SpawnsHolder.GetComponentsInChildren<NetworkStartPosition>();
+        System.Random rand = new System.Random();
+
+        Transform _spawnPoint = NetworkManager.singleton.GetStartPosition();
+        transform.position = _spawnPoint.position;
+        transform.rotation = _spawnPoint.rotation;
+
+        yield return new WaitForSeconds(0.1f);
+
+        //SetupPlayer();
+
+        Debug.Log(transform.name + " respawned.");
+    }
     public void TakeDamage(PlayerMechanics whoShooted,int amount)
     {
         if (isServer)
@@ -241,6 +267,12 @@ public class PlayerMechanics : NetworkBehaviour
         dieFx.Play();
         health = 100;
         deaths++;
+        if (isLocalPlayer)
+        {
+            Debug.LogError($"Player is respawning");
+
+            Respawn();
+        }
     }
     [ClientRpc]
     public void RpcDie()
@@ -258,6 +290,8 @@ public class PlayerMechanics : NetworkBehaviour
             ShootableNPC npc = hit.transform.GetComponent<ShootableNPC>();
             if (player != null)
             {
+                if (player.name == this.name)
+                    return;
                 CmdDealDamage(damage, player.name);
                 if (player.death)
                 {
@@ -270,7 +304,7 @@ public class PlayerMechanics : NetworkBehaviour
                 npc.TakeDamage(damage);
                 if (npc.death)
                 {
-                    player.kills += 1;
+                    kills += 1;
                     Debug.Log("The player killed an NPC!");
                 }
             }

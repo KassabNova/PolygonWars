@@ -14,4 +14,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/WaitingLobby.unity
     guid: 5d05664327b959b4487253768ead847e
+  - enabled: 0
+    path: Assets/ImportedAssets/Networking/Mirror/Examples/Room/Scenes/OfflineScene.unity
+    guid: 9e6f14982412b2545a0911ebaaa46a23
+  - enabled: 0
+    path: Assets/ImportedAssets/Networking/Mirror/Examples/Room/Scenes/RoomScene.unity
+    guid: 48478f4d522f96945b8396f376299d3a
+  - enabled: 0
+    path: Assets/ImportedAssets/Networking/Mirror/Examples/Room/Scenes/OnlineScene.unity
+    guid: d7a6763559b31854586c9e49916273ef
   m_configObjects: {}
