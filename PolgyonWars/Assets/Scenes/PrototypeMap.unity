@@ -62924,7 +62924,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 1904429215}
-  networkAddress: localhost
+  networkAddress: ckassab.xyz
   maxConnections: 4
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 8903665275274414173, guid: 84aa26a9eba957843831570bf12c125b,
